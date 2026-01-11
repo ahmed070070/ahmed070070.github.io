@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechToon Maker - عالم الكرتون التكنولوجي</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- مكتبة Fabric.js للمحرر الرسومي -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <!-- مكتبة GSAP للتحريك -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-robot"></i> TechToon Maker</h1>
+        <p>اصنع شخصيات كرتونية من عالم التكنولوجيا وحولها إلى رسوم متحركة!</p>
+    </header>
+
+    <div class="container">
+        <!-- القائمة الجانبية للأدوات -->
+        <aside class="sidebar">
+            <div class="tools-section">
+                <h3><i class="fas fa-shapes"></i> القوالب الجاهزة</h3>
+                <div class="templates">
+                    <div class="template" data-template="smartphone">
+                        <img src="مشاعر.jpg" alt="هاتف ذكي">
+                        <span>هاتف ذكي</span>
+                    </div>
+                    <div class="template" data-template="laptop">
+                        <img src="assets/templates/laptop.png" alt="لابتوب">
+                        <span>لابتوب</span>
+                    </div>
+                    <div class="template" data-template="router">
+                        <img src="assets/templates/router.png" alt="راوتر">
+                        <span>راوتر</span>
+                    </div>
+                    <div class="template" data-template="robot">
+                        <img src="assets/templates/robot.png" alt="روبوت">
+                        <span>روبوت</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tools-section">
+                <h3><i class="fas fa-palette"></i> أدوات الرسم</h3>
+                <div class="drawing-tools">
+                    <button id="select-tool"><i class="fas fa-mouse-pointer"></i> تحديد</button>
+                    <button id="draw-tool"><i class="fas fa-pencil-alt"></i> رسم حر</button>
+                    <button id="rectangle-tool"><i class="fas fa-square"></i> مستطيل</button>
+                    <button id="circle-tool"><i class="fas fa-circle"></i> دائرة</button>
+                    <button id="text-tool"><i class="fas fa-font"></i> نص</button>
+                    <button id="eye-tool"><i class="fas fa-eye"></i> عيون</button>
+                    <button id="mouth-tool"><i class="far fa-grin"></i> فم</button>
+                </div>
+            </div>
+
+            <div class="tools-section">
+                <h3><i class="fas fa-sliders-h"></i> خصائص</h3>
+                <div class="properties">
+                    <label>اللون: <input type="color" id="color-picker" value="#3498db"></label>
+                    <label>حجم الخط: <input type="range" id="font-size" min="10" max="72" value="24"></label>
+                    <label>التعبئة: <input type="color" id="fill-color" value="#e74c3c"></label>
+                    <label>الحدود: <input type="color" id="border-color" value="#2c3e50"></label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- منطقة العمل الرئيسية -->
+        <main class="workspace">
+            <div class="canvas-container">
+                <canvas id="main-canvas" width="1000" height="600"></canvas>
+                
+                <div class="workspace-controls">
+                    <button id="clear-canvas"><i class="fas fa-trash"></i> مسح الكل</button>
+                    <button id="save-project"><i class="fas fa-save"></i> حفظ المشروع</button>
+                    <button id="load-project"><i class="fas fa-folder-open"></i> فتح مشروع</button>
+                    <button id="export-image"><i class="fas fa-download"></i> تصدير صورة</button>
+                </div>
+            </div>
+
+            <!-- قسم التحريك -->
+            <div class="animation-section">
+                <h3><i class="fas fa-film"></i> نظام التحريك</h3>
+                <div class="animation-controls">
+                    <button id="record-animation"><i class="fas fa-circle"></i> تسجيل حركة</button>
+                    <button id="play-animation"><i class="fas fa-play"></i> تشغيل</button>
+                    <button id="stop-animation"><i class="fas fa-stop"></i> إيقاف</button>
+                    <button id="reset-animation"><i class="fas fa-undo"></i> إعادة تعيين</button>
+                </div>
+                
+                <div class="animation-timeline">
+                    <h4>الخط الزمني للحركة</h4>
+                    <div id="timeline"></div>
+                </div>
+            </div>
+
+            <!-- قسم البرمجة (مشابه لسكراتش) -->
+            <div class="coding-section">
+                <h3><i class="fas fa-code"></i> نظام البرمجة البصرية</h3>
+                <div class="blocks-palette">
+                    <div class="block" data-command="move" draggable="true">
+                        <i class="fas fa-arrow-right"></i> تحرك 10 خطوة
+                    </div>
+                    <div class="block" data-command="rotate" draggable="true">
+                        <i class="fas fa-redo"></i> استدر 15 درجة
+                    </div>
+                    <div class="block" data-command="say" draggable="true">
+                        <i class="fas fa-comment"></i> قل "مرحباً"
+                    </div>
+                    <div class="block" data-command="wait" draggable="true">
+                        <i class="fas fa-clock"></i> انتظر 1 ثانية
+                    </div>
+                    <div class="block" data-command="loop" draggable="true">
+                        <i class="fas fa-repeat"></i> كرر 10 مرات
+                    </div>
+                </div>
+                
+                <div class="coding-area" id="coding-area">
+                    <h4>اسحب الأوامر هنا لبرمجة الشخصية</h4>
+                </div>
+                
+                <button id="run-code"><i class="fas fa-play-circle"></i> تشغيل البرنامج</button>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>TechToon Maker &copy; 2023 - موقعك للإبداع التكنولوجي الكرتوني</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
