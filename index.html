@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فحمة - السيف المخفف 🗡️</title>
+    <style>
+        /* 🔥 نظام تصميم أبسط */
+        :root {
+            --bg: #0a0a0a;
+            --layer1: #1a1a1a;
+            --layer2: #2a2a2a;
+            --text: #e0e0e0;
+            --text-dim: #888;
+            --accent: #444;
+            --danger: #5a1a1a;
+            --success: #1a5a1a;
+            --toast-bg: rgba(0, 0, 0, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        /* 🔥 حاويات أقل، أنظف */
+        #app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 🔥 الهيدر المخفف */
+        .header {
+            background: var(--layer1);
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--layer2);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .deep-mode-btn {
+            background: var(--layer2);
+            border: 1px solid var(--accent);
+            color: var(--text-dim);
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* 🔥 منطقة النص المخففة */
+        .text-area {
+            flex: 1;
+            padding: 12px;
+            overflow: auto;
+        }
+
+        #textInput {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 18px;
+            line-height: 1.5;
+            font-family: 'Courier New', monospace;
+            resize: none;
+            outline: none;
+            overflow-wrap: break-word;
+            caret-color: var(--text);
+        }
+
+        /* 🔥 شريط الاختصارات السريع - الأهم */
+        .quick-bar {
+            background: var(--layer1);
+            border-top: 1px solid var(--layer2);
+            padding: 6px;
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            flex-shrink: 0;
+            min-height: 48px;
+        }
+
+        .quick-btn {
+            background: var(--layer2);
+            border: 1px solid var(--accent);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .quick-btn:active {
+            background: var(--accent);
+        }
+
+        /* 🔥 لوحة المفاتيح المخففة */
+        .keyboard {
+            background: var(--layer1);
+            border-top: 1px solid var(--layer2);
+            padding: 8px;
+            display: grid;
+            grid-template-rows: repeat(4, 1fr);
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .keyboard-row {
+            display: flex;
+            gap: 4px;
+        }
+
+        .key {
+            background: var(--layer2);
+            border: 1px solid var(--accent);
+            color: var(--text);
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            min-height: 48px;
+            touch-action: manipulation;
+        }
+
+        .key:active {
+            background: var(--accent);
+        }
+
+        .key.space {
+            flex: 3;
+        }
+
+        .key.delete {
+            background: var(--danger);
+        }
+
+        .key.enter {
+            background: var(--success);
+        }
+
+        /* 🔥 التوست (بدل alert) */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--toast-bg);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* 🔥 الحافظة المخففة (تظهر عند الحاجة فقط) */
+        .clipboard-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .clipboard-overlay.show {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .clipboard-header {
+            padding: 12px;
+            background: var(--layer1);
+            border-bottom: 1px solid var(--layer2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .clipboard-search {
+            width: 100%;
+            padding: 8px;
+            background: var(--layer2);
+            border: 1px solid var(--accent);
+            color: var(--text);
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .clipboard-items {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .clipboard-item {
+            padding: 10px;
+            border-bottom: 1px solid var(--layer2);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clipboard-item:hover {
+            background: var(--layer2);
+        }
+
+        /* 🔥 وضع الكتابة العميقة */
+        body.deep-writing .header,
+        body.deep-writing .quick-bar {
+            display: none;
+        }
+
+        body.deep-writing .text-area {
+            padding: 0;
+        }
+
+        body.deep-writing #textInput {
+            font-size: 20px;
+            padding: 20px;
+        }
+
+        /* 🔥 اللف السلس */
+        .scroll-smooth {
+            scroll-behavior: smooth;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 🔥 هيدر مخفف -->
+        <div class="header">
+            <div class="header-title">
+                <span>🗡️</span>
+                <span>فحمة</span>
+            </div>
+            <button class="deep-mode-btn" id="deepModeBtn">🕳️ عميق</button>
+        </div>
+
+        <!-- 🔥 منطقة النص -->
+        <div class="text-area scroll-smooth">
+            <textarea id="textInput" placeholder="اكتب... (اختصارات: gm, fn, cl, im)"></textarea>
+        </div>
+
+        <!-- 🔥 شريط الاختصارات السريع - الجديد -->
+        <div class="quick-bar" id="quickBar">
+            <!-- سيتم ملؤها بالكود -->
+        </div>
+
+        <!-- 🔥 لوحة المفاتيح -->
+        <div class="keyboard" id="keyboard">
+            <!-- سيتم ملؤها بالكود -->
+        </div>
+    </div>
+
+    <!-- 🔥 التوست -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 🔥 الحافظة (مخفية حتى تفتح) -->
+    <div class="clipboard-overlay" id="clipboardOverlay">
+        <div class="clipboard-header">
+            <span>📋 الحافظة الذكية</span>
+            <button class="quick-btn" id="closeClipboardBtn">إغلاق</button>
+        </div>
+        <input type="text" class="clipboard-search" id="clipboardSearch" placeholder="🔍 بحث في الحافظة...">
+        <div class="clipboard-items scroll-smooth" id="clipboardItems">
+            <!-- ستتم تعبئتها عند الفتح فقط -->
+        </div>
+    </div>
+
+    <script>
+        // 🔥 حالة مخففة - أقل تعقيداً
+        const state = {
+            text: '',
+            shortcuts: {
+                'gm': 'console.log();',
+                'fn': 'function() {}',
+                'cl': 'class {}',
+                'im': 'import from \'\';',
+                'ph': '+9665XXXXXXXX',
+                'em': 'email@example.com',
+                'sg': '---\nفحمة 🗡️'
+            },
+            quickShortcuts: ['gm', 'fn', 'cl', 'im', 'ph', 'em', 'sg'],
+            clipboard: [],
+            lastWord: '',
+            isDeepMode: false,
+            saveTimer: null,
+            clipboardData: [] // مخزن مؤقت للحافظة
+        };
+
+        // 🔥 تهيئة التطبيق (أخف)
+        document.addEventListener('DOMContentLoaded', () => {
+            initQuickBar();
+            initKeyboard();
+            initEvents();
+            loadInitialState();
+            document.getElementById('textInput').focus();
+        });
+
+        // 🔥 تهيئة شريط الاختصارات السريع
+        function initQuickBar() {
+            const quickBar = document.getElementById('quickBar');
+            quickBar.innerHTML = '';
+            
+            // أزرار الأوامر الأساسية
+            const commands = [
+                { text: '📋', action: 'openClipboard' },
+                { text: '<>', action: 'brackets' },
+                { text: '{}', action: 'curly' },
+                { text: '()', action: 'parentheses' },
+                { text: '→', action: 'arrow' },
+                { text: '/', action: 'slash' },
+                { text: 'نسخ', action: 'copy' },
+                { text: 'لصق', action: 'paste' }
+            ];
+            
+            commands.forEach(cmd => {
+                const btn = document.createElement('button');
+                btn.className = 'quick-btn';
+                btn.textContent = cmd.text;
+                btn.dataset.action = cmd.action;
+                quickBar.appendChild(btn);
+            });
+            
+            // الاختصارات النصية السريعة
+            state.quickShortcuts.forEach(shortcut => {
+                const btn = document.createElement('button');
+                btn.className = 'quick-btn';
+                btn.textContent = shortcut;
+                btn.dataset.shortcut = shortcut;
+                quickBar.appendChild(btn);
+            });
+        }
+
+        // 🔥 تهيئة لوحة المفاتيح
+        function initKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            const rows = [
+                ['ض', 'ص', 'ث', 'ق', 'ف', 'غ', 'ع', 'ه', 'خ', 'ح', 'ج', 'د', 'ذ'],
+                ['ش', 'س', 'ي', 'ب', 'ل', 'ا', 'ت', 'ن', 'م', 'ك', 'ط', '←'],
+                ['ئ', 'ء', 'ؤ', 'ر', 'لا', 'ى', 'ة', 'و', 'ز', 'ظ', '⌫'],
+                ['#+=', '،', 'مسافة', '↵']
+            ];
+
+            keyboard.innerHTML = '';
+            
+            rows.forEach(rowKeys => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+                
+                rowKeys.forEach(key => {
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'key';
+                    
+                    // معالجة المفاتيح الخاصة
+                    if (key === '⌫') {
+                        keyDiv.classList.add('delete');
+                        keyDiv.textContent = '⌫';
+                    } else if (key === '↵') {
+                        keyDiv.classList.add('enter');
+                        keyDiv.textContent = '↵';
+                    } else if (key === 'مسافة') {
+                        keyDiv.classList.add('space');
+                        keyDiv.textContent = '____';
+                    } else {
+                        keyDiv.textContent = key;
+                    }
+                    
+                    rowDiv.appendChild(keyDiv);
+                });
+                
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        // 🔥 تهيئة جميع الأحداث (Event Delegation)
+        function initEvents() {
+            const app = document.getElementById('app');
+            
+            // 🔥 حدث واحد للوحة المفاتيح
+            app.addEventListener('click', (e) => {
+                const target = e.target;
+                
+                // مفاتيح لوحة المفاتيح
+                if (target.classList.contains('key')) {
+                    e.preventDefault();
+                    const key = target.textContent;
+                    handleKeyPress(key);
+                    return;
+                }
+                
+                // أزرار شريط الاختصارات
+                if (target.classList.contains('quick-btn')) {
+                    e.preventDefault();
+                    
+                    if (target.dataset.action) {
+                        handleCommand(target.dataset.action);
+                    } else if (target.dataset.shortcut) {
+                        insertShortcut(target.dataset.shortcut);
+                    }
+                    return;
+                }
+            });
+            
+            // 🔥 أحداث لوضع الكتابة العميقة
+            document.getElementById('deepModeBtn').addEventListener('click', toggleDeepMode);
+            document.getElementById('closeClipboardBtn').addEventListener('click', closeClipboard);
+            document.getElementById('clipboardSearch').addEventListener('input', searchClipboard);
+            
+            // 🔥 حدث النص مع Debounce
+            const textInput = document.getElementById('textInput');
+            textInput.addEventListener('input', (e) => {
+                state.text = e.target.value;
+                updateLastWord();
+                autoSave();
+                checkForShortcuts();
+            });
+            
+            // 🔥 نسخ إلى الحافظة
+            textInput.addEventListener('copy', () => {
+                const selected = window.getSelection().toString();
+                if (selected.trim()) {
+                    addToClipboard(selected);
+                }
+            });
+            
+            // 🔥 اختصارات لوحة المفاتيح
+            document.addEventListener('keydown', (e) => {
+                // Ctrl+B لفتح الحافظة
+                if (e.ctrlKey && e.key === 'b') {
+                    e.preventDefault();
+                    openClipboard();
+                }
+                
+                // Esc لإغلاق الحافظة
+                if (e.key === 'Escape') {
+                    closeClipboard();
+                }
+            });
+        }
+
+        // 🔥 معالجة ضغطة المفتاح
+        function handleKeyPress(key) {
+            const textInput = document.getElementById('textInput');
+            const cursorPos = textInput.selectionStart;
+            const text = textInput.value;
+            
+            switch(key) {
+                case '⌫':
+                    if (cursorPos > 0) {
+                        textInput.value = text.slice(0, cursorPos - 1) + text.slice(cursorPos);
+                        textInput.selectionStart = cursorPos - 1;
+                        textInput.selectionEnd = cursorPos - 1;
+                    }
+                    break;
+                    
+                case '↵':
+                    insertAtCursor('\n');
+                    break;
+                    
+                case 'مسافة':
+                    insertAtCursor(' ');
+                    break;
+                    
+                case '←':
+                    textInput.selectionStart = Math.max(0, cursorPos - 1);
+                    textInput.selectionEnd = Math.max(0, cursorPos - 1);
+                    break;
+                    
+                case '#+=':
+                    showToast('لوحة الرموز - قريبًا');
+                    break;
+                    
+                case '،':
+                    insertAtCursor('،');
+                    break;
+                    
+                default:
+                    insertAtCursor(key);
+            }
+            
+            textInput.focus();
+        }
+
+        // 🔥 إدراج نص عند المؤشر
+        function insertAtCursor(textToInsert) {
+            const textInput = document.getElementById('textInput');
+            const cursorPos = textInput.selectionStart;
+            const text = textInput.value;
+            
+            textInput.value = text.slice(0, cursorPos) + textToInsert + text.slice(cursorPos);
+            textInput.selectionStart = cursorPos + textToInsert.length;
+            textInput.selectionEnd = cursorPos + textToInsert.length;
+        }
+
+        // 🔥 معالجة الأوامر
+        function handleCommand(cmd) {
+            switch(cmd) {
+                case 'openClipboard':
+                    openClipboard();
+                    break;
+                case 'copy':
+                    navigator.clipboard.writeText(state.text)
+                        .then(() => showToast('تم النسخ'));
+                    break;
+                case 'paste':
+                    navigator.clipboard.readText()
+                        .then(text => {
+                            insertAtCursor(text);
+                            showToast('تم اللصق');
+                        });
+                    break;
+                case 'brackets':
+                    insertAround('<', '>');
+                    break;
+                case 'curly':
+                    insertAround('{', '}');
+                    break;
+                case 'parentheses':
+                    insertAround('(', ')');
+                    break;
+                case 'arrow':
+                    insertAtCursor('→');
+                    break;
+                case 'slash':
+                    insertAtCursor('/');
+                    break;
+            }
+        }
+
+        // 🔥 إدراج اختصار
+        function insertShortcut(shortcut) {
+            if (state.shortcuts[shortcut]) {
+                insertAtCursor(state.shortcuts[shortcut]);
+                showToast(`تم إدراج: ${shortcut}`);
+            }
+        }
+
+        // 🔥 إدراج حول النص
+        function insertAround(left, right) {
+            const textInput = document.getElementById('textInput');
+            const start = textInput.selectionStart;
+            const end = textInput.selectionEnd;
+            const selected = textInput.value.slice(start, end);
+            
+            textInput.value = textInput.value.slice(0, start) + left + selected + right + textInput.value.slice(end);
+            
+            if (selected.length === 0) {
+                textInput.selectionStart = start + 1;
+                textInput.selectionEnd = start + 1;
+            } else {
+                textInput.selectionEnd = end + 2;
+            }
+        }
+
+        // 🔥 تحديث آخر كلمة (أخف من البحث كل مرة)
+        function updateLastWord() {
+            const text = state.text;
+            const cursorPos = document.getElementById('textInput').selectionStart;
+            
+            const lastSpace = text.lastIndexOf(' ', cursorPos - 1);
+            const lastNewline = text.lastIndexOf('\n', cursorPos - 1);
+            const start = Math.max(lastSpace, lastNewline) + 1;
+            
+            state.lastWord = text.slice(start, cursorPos).trim();
+        }
+
+        // 🔥 التحقق من الاختصارات
+        function checkForShortcuts() {
+            if (state.lastWord && state.shortcuts[state.lastWord]) {
+                const textInput = document.getElementById('textInput');
+                const cursorPos = textInput.selectionStart;
+                const text = textInput.value;
+                
+                const lastSpace = text.lastIndexOf(' ', cursorPos - 1);
+                const lastNewline = text.lastIndexOf('\n', cursorPos - 1);
+                const start = Math.max(lastSpace, lastNewline) + 1;
+                
+                const replacement = state.shortcuts[state.lastWord];
+                textInput.value = text.slice(0, start) + replacement + text.slice(cursorPos);
+                textInput.selectionStart = start + replacement.length;
+                textInput.selectionEnd = start + replacement.length;
+                
+                showToast(`اختصار: ${state.lastWord} → ${replacement.slice(0, 20)}...`);
+                state.lastWord = '';
+            }
+        }
+
+        // 🔥 التخزين التلقائي (مع Debounce)
+        function autoSave() {
+            clearTimeout(state.saveTimer);
+            state.saveTimer = setTimeout(() => {
+                try {
+                    localStorage.setItem('fuhaima_text', state.text);
+                    localStorage.setItem('fuhaima_clipboard', JSON.stringify(state.clipboardData));
+                } catch (e) {
+                    console.warn('خطأ في الحفظ:', e);
+                }
+            }, 1000); // حفظ كل ثانية فقط
+        }
+
+        // 🔥 تحميل الحالة الأولية
+        function loadInitialState() {
+            try {
+                const savedText = localStorage.getItem('fuhaima_text');
+                if (savedText) {
+                    document.getElementById('textInput').value = savedText;
+                    state.text = savedText;
+                }
+                
+                const savedClipboard = localStorage.getItem('fuhaima_clipboard');
+                if (savedClipboard) {
+                    state.clipboardData = JSON.parse(savedClipboard);
+                }
+            } catch (e) {
+                console.warn('خطأ في التحميل:', e);
+            }
+        }
+
+        // 🔥 إظهار التوست (بدل alert)
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // 🔥 تبديل وضع الكتابة العميقة
+        function toggleDeepMode() {
+            state.isDeepMode = !state.isDeepMode;
+            document.body.classList.toggle('deep-writing', state.isDeepMode);
+            document.getElementById('deepModeBtn').textContent = 
+                state.isDeepMode ? '📖 عادي' : '🕳️ عميق';
+        }
+
+        // 🔥 فتح الحافظة (Lazy Load)
+        function openClipboard() {
+            const overlay = document.getElementById('clipboardOverlay');
+            overlay.classList.add('show');
+            
+            // 🔥 تحميل المحتوى عند الفتح فقط
+            if (state.clipboard.length === 0) {
+                renderClipboard();
+            }
+            
+            // التركيز على حقل البحث
+            setTimeout(() => {
+                document.getElementById('clipboardSearch').focus();
+            }, 100);
+        }
+
+        // 🔥 إغلاق الحافظة
+        function closeClipboard() {
+            document.getElementById('clipboardOverlay').classList.remove('show');
+            document.getElementById('textInput').focus();
+        }
+
+        // 🔥 بحث في الحافظة
+        function searchClipboard() {
+            const query = document.getElementById('clipboardSearch').value.toLowerCase();
+            renderClipboard(query);
+        }
+
+        // 🔥 عرض الحافظة (بتصفية)
+        function renderClipboard(filter = '') {
+            const container = document.getElementById('clipboardItems');
+            
+            // استخدام البيانات المخزنة
+            let items = state.clipboardData;
+            
+            if (filter) {
+                items = items.filter(item => 
+                    item.text.toLowerCase().includes(filter)
+                );
+            }
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="clipboard-item">لا توجد عناصر</div>';
+                return;
+            }
+            
+            container.innerHTML = items.map((item, index) => `
+                <div class="clipboard-item" data-index="${index}">
+                    <span style="font-size: 12px; color: var(--text-dim);">${index + 1}</span>
+                    <div style="flex: 1; margin: 0 10px; overflow: hidden; text-overflow: ellipsis;">
+                        ${item.text.length > 50 ? item.text.slice(0, 50) + '...' : item.text}
+                    </div>
+                    <button class="quick-btn" style="padding: 4px 8px; font-size: 12px;" data-paste="${index}">لصق</button>
+                </div>
+            `).join('');
+            
+            // إضافة أحداث اللصق
+            container.querySelectorAll('[data-paste]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const index = parseInt(btn.dataset.paste);
+                    insertAtCursor(items[index].text);
+                    closeClipboard();
+                });
+            });
+        }
+
+        // 🔥 إضافة إلى الحافظة
+        function addToClipboard(text) {
+            if (!text.trim()) return;
+            
+            // تجنب التكرارات
+            if (state.clipboardData[0]?.text === text) return;
+            
+            state.clipboardData.unshift({
+                text: text,
+                time: new Date().toLocaleTimeString()
+            });
+            
+            // الحفاظ على آخر 30 عنصر فقط
+            if (state.clipboardData.length > 30) {
+                state.clipboardData = state.clipboardData.slice(0, 30);
+            }
+            
+            autoSave();
+        }
+
+        // 🔥 منع الإغلاق عند النقر داخل الحافظة
+        document.getElementById('clipboardOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('clipboardOverlay')) {
+                closeClipboard();
+            }
+        });
+    </script>
+</body>
+</html>
