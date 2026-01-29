@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a192f">
+    <title>Dragon | المحادثات</title>
+    
+    <!-- الخطوط -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- شاشة التحميل -->
+    <div id="loader">
+        <div class="loader-logo">🐉</div>
+        <div class="loader-text">Dragon</div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+    </div>
+
+    <!-- شاشة الدخول -->
+    <div id="login-screen">
+        <div class="login-container">
+            <div class="login-logo">🐉</div>
+            <h1 class="login-title">Dragon</h1>
+            <p class="login-subtitle">تطبيق المحادثات الآمنة</p>
+            
+            <button class="login-btn google-btn" id="login-btn">
+                <img src="https://img.icons8.com/color/24/000000/google-logo.png" alt="Google" class="google-icon">
+                <span>تسجيل الدخول بحساب Google</span>
+            </button>
+            
+            <div class="login-features">
+                <p><i class="fas fa-bolt"></i> دردشة فورية وسريعة</p>
+                <p><i class="fas fa-camera"></i> مشاركة الصور والملفات</p>
+                <p><i class="fas fa-lock"></i> محادثات مشفرة وآمنة</p>
+                <p><i class="fas fa-users"></i> إنشاء مجموعات خاصة</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- التطبيق الرئيسي -->
+    <div id="app">
+        <!-- الهيدر -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">🐉</span>
+                <span class="logo-text">Dragon</span>
+            </div>
+            <div class="user-info" id="user-info-container">
+                <span id="user-name" class="user-name">المستخدم</span>
+                <img id="user-avatar" class="user-avatar" src="" alt="صورة المستخدم">
+                <!-- سيتم إضافة زر تسجيل الخروج تلقائياً -->
+            </div>
+        </header>
+
+        <!-- التبويبات -->
+        <div class="tabs">
+            <button class="tab active" data-tab="chats">
+                <i class="fas fa-comments"></i>
+                <span>المحادثات</span>
+            </button>
+            <button class="tab" data-tab="groups">
+                <i class="fas fa-users"></i>
+                <span>المجموعات</span>
+            </button>
+            <button class="tab" data-tab="contacts">
+                <i class="fas fa-address-book"></i>
+                <span>جهات الاتصال</span>
+            </button>
+        </div>
+
+        <!-- البحث -->
+        <div class="search-container">
+            <input type="text" class="search-input" id="search-input" placeholder="ابحث في المحادثات...">
+            <span class="search-icon"><i class="fas fa-search"></i></span>
+        </div>
+
+        <!-- قائمة المحادثات -->
+        <div class="chats-list" id="chats-list">
+            <!-- سيتم تعبئتها تلقائياً -->
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>جاري تحميل المحادثات...</p>
+            </div>
+        </div>
+
+        <!-- زر إنشاء -->
+        <button class="fab" id="create-fab" title="إرسال صورة">
+            <i class="fas fa-camera"></i>
+        </button>
+
+        <!-- مودال إنشاء مجموعة -->
+        <div class="modal" id="group-modal">
+            <div class="modal-content">
+                <h2 class="modal-title"><i class="fas fa-users"></i> إنشاء مجموعة جديدة</h2>
+                <input type="text" class="modal-input" id="group-name" placeholder="اسم المجموعة" autocomplete="off">
+                <input type="text" class="modal-input" id="group-desc" placeholder="وصف المجموعة (اختياري)" autocomplete="off">
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" id="modal-cancel">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                    <button class="modal-btn create" id="modal-create">
+                        <i class="fas fa-plus"></i> إنشاء
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- الإشعارات -->
+        <div id="notifications"></div>
+    </div>
+
+    <!-- ملفات JavaScript -->
+    <!-- الملف الرئيسي يجب أن يكون أولاً -->
+    <script type="module" src="app.js"></script>
+    
+    <!-- وظائف مساعدة عامة -->
+    <script>
+        // وظائف للاستخدام في onclick و event handlers
+        function openChat(chatId, chatType) {
+            window.open(`chat.html?type=${chatType}&id=${chatId}`, '_blank', 'width=800,height=600');
+        }
+
+        function showGroupModal() {
+            document.getElementById('group-modal').style.display = 'flex';
+            document.getElementById('group-name').focus();
+        }
+
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notifications');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            let icon = 'ℹ️';
+            if (type === 'error') icon = '❌';
+            else if (type === 'success') icon = '✅';
+            else if (type === 'warning') icon = '⚠️';
+            
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <span class="notification-icon">${icon}</span>
+                    <span class="notification-message">${message}</span>
+                    <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // إظهار الإشعار
+            setTimeout(() => notification.classList.add('show'), 10);
+            
+            // إخفاء تلقائي بعد 4 ثوانٍ
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            const weeks = Math.floor(days / 7);
+
+            if (minutes < 1) return 'الآن';
+            if (minutes < 60) return `${minutes} دقيقة`;
+            if (hours < 24) return `${hours} ساعة`;
+            if (days < 7) return `${days} يوم`;
+            if (weeks < 4) return `${weeks} أسبوع`;
+            
+            return date.toLocaleDateString('ar-SA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // وظائف الصور
+        function showImageModal(chatId) {
+            // هذه الوظيفة سيتم استدعاؤها من التطبيق
+            if (typeof window.showImageModalInternal === 'function') {
+                window.showImageModalInternal(chatId);
+            } else {
+                showNotification('جاري تحميل ميزة الصور...', 'info');
+            }
+        }
+
+        function downloadImage(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dragon-image-${Date.now()}.jpg`;
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        async function shareImage(url) {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'صورة من تطبيق Dragon',
+                        text: 'شاهد هذه الصورة من تطبيق المحادثات Dragon',
+                        url: url
+                    });
+                } catch (error) {
+                    // إذا ألغى المستخدم المشاركة
+                    console.log('تم إلغاء المشاركة');
+                }
+            } else {
+                // نسخ الرابط إذا لم يكن Share API متاحاً
+                try {
+                    await navigator.clipboard.writeText(url);
+                    showNotification('تم نسخ رابط الصورة إلى الحافظة', 'success');
+                } catch (err) {
+                    // طريقة بديلة للنسخ
+                    const textArea = document.createElement('textarea');
+                    textArea.value = url;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showNotification('تم نسخ رابط الصورة', 'success');
+                }
+            }
+        }
+
+        function showFullImage(imgElement) {
+            const modal = document.createElement('div');
+            modal.className = 'modal full-image-modal';
+            modal.innerHTML = `
+                <div class="modal-content full-image-content">
+                    <button class="close-full-image" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <img src="${imgElement.src}" alt="صورة كاملة" class="full-image">
+                    <div class="image-actions">
+                        <button onclick="downloadImage('${imgElement.src}')">
+                            <i class="fas fa-download"></i> حفظ
+                        </button>
+                        <button onclick="shareImage('${imgElement.src}')">
+                            <i class="fas fa-share-alt"></i> مشاركة
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // إغلاق عند النقر خارج الصورة
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+            
+            // إغلاق بمفتاح ESC
+            const handleEscKey = (e) => {
+                if (e.key === 'Escape') {
+                    modal.remove();
+                    document.removeEventListener('keydown', handleEscKey);
+                }
+            };
+            document.addEventListener('keydown', handleEscKey);
+        }
+
+        // تحديث الصفحة عند التركيز
+        window.addEventListener('focus', function() {
+            if (window.currentUser && window.currentTab && window.loadChats) {
+                // تحديث القائمة الحالية
+                if (window.currentTab === 'chats' && typeof window.loadChats === 'function') {
+                    window.loadChats();
+                }
+            }
+        });
+
+        // منع إعادة تحميل الصفحة عند الخروج
+        window.addEventListener('beforeunload', function(e) {
+            if (window.currentUser) {
+                // تحديث حالة المستخدم قبل الخروج
+                if (window.db && window.currentUser) {
+                    const userRef = window.db.ref('users/' + window.currentUser.uid);
+                    userRef.update({
+                        online: false,
+                        lastSeen: Date.now()
+                    }).catch(console.error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
